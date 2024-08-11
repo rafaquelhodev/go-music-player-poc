@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./dev.Dockerfile
+    volumes:
+      - ./:/app
+    devices:
+      - /dev/snd:/dev/snd
+    # tty: true

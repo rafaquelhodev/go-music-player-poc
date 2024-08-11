@@ -9,7 +9,4 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /goplayer
-
-#docker run --rm alpine/curl -s https://www.google.com/
-ENTRYPOINT ["/goplayer"]
+CMD ["tail", "-f", "/dev/null"]

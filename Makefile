@@ -6,3 +6,9 @@ build-docker:
 
 run-docker:
 	docker run --rm -it --device=/dev/snd:/dev/snd audio-container:v1
+
+build-dev-docker:
+	docker compose build
+
+run-dev-docker:
+	docker compose up
