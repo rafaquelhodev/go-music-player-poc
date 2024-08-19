@@ -1,6 +1,6 @@
 FROM golang:1.22.5
 
-RUN apt-get update && apt-get install -y alsa-utils mpg123
+RUN apt-get update && apt-get install -y pulseaudio mpg123
 
 WORKDIR /app
 
