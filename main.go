@@ -12,11 +12,11 @@ import (
 	"github.com/rafaquelhodev/go-sound-player/internal/options"
 )
 
-func startCron(done chan os.Signal, bpm int) {
-	periodMilliseconds := 60 * 1000 / bpm
+func startCron(done chan os.Signal, opts *options.Options) {
+	periodMilliseconds := 60 * 1000 / *opts.Bpm / *opts.Subdivisions
 	ticker := time.NewTicker(time.Duration(periodMilliseconds) * time.Millisecond)
 
-	beats := 4
+	beats := *opts.Beats * *opts.Subdivisions
 
 	count := 0
 
@@ -54,7 +54,7 @@ func main() {
 
 	opts := options.ReadOptions()
 
-	go startCron(done, *opts.Bpm)
+	go startCron(done, opts)
 
 	fmt.Println("Blocking, press ctrl+c to continue...")
 	<-done // Will block here until user hits ctrl+c
