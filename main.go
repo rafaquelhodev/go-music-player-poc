@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -13,7 +12,8 @@ import (
 )
 
 func startCron(done chan os.Signal, bpm int) {
-	ticker := time.NewTicker(time.Duration(int(math.Round(float64(60*1000/bpm)))) * time.Millisecond)
+	periodMilliseconds := 60 * 1000 / bpm
+	ticker := time.NewTicker(time.Duration(periodMilliseconds) * time.Millisecond)
 
 	beats := 4
 
