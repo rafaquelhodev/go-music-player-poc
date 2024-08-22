@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/rafaquelhodev/go-sound-player/internal/options"
 )
 
 func startCron(done chan os.Signal, bpm int) {
@@ -51,11 +52,9 @@ func main() {
 
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 
-	bpm := flag.Int("bpm", 60, "the BPM value")
+	opts := options.ReadOptions()
 
-	flag.Parse()
-
-	go startCron(done, *bpm)
+	go startCron(done, *opts.Bpm)
 
 	fmt.Println("Blocking, press ctrl+c to continue...")
 	<-done // Will block here until user hits ctrl+c
