@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -9,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/rafaquelhodev/go-sound-player/internal/drawer"
 	"github.com/rafaquelhodev/go-sound-player/internal/options"
 )
 
@@ -16,7 +16,10 @@ func startCron(done chan os.Signal, opts *options.Options) {
 	periodMilliseconds := 60 * 1000 / *opts.Bpm / *opts.Subdivisions
 	ticker := time.NewTicker(time.Duration(periodMilliseconds) * time.Millisecond)
 
-	beats := *opts.Beats * *opts.Subdivisions
+	drw := drawer.NewDrawer(opts)
+
+	// TODO: centralize logic
+	beats := *opts.Beats + 1 + *opts.Beats*(*opts.Subdivisions-1)
 
 	count := 0
 
@@ -32,12 +35,13 @@ func startCron(done chan os.Signal, opts *options.Options) {
 				if count == 1 {
 					sound = "./beep.mp3"
 				}
-				go func() {
+				go func(count int) {
+					drw.Draw(count)
 					cmd := exec.Command("mpg123", sound)
 					if err := cmd.Run(); err != nil {
 						log.Fatal(err)
 					}
-				}()
+				}(count)
 
 				if count == beats {
 					count = 0
@@ -56,6 +60,5 @@ func main() {
 
 	go startCron(done, opts)
 
-	fmt.Println("Blocking, press ctrl+c to continue...")
 	<-done // Will block here until user hits ctrl+c
 }

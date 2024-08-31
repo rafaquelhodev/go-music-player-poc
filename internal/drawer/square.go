@@ -6,8 +6,8 @@ type Square struct {
 	BeingPlayed  bool
 }
 
-func NewSquare() *Square {
-	return &Square{IsBeat: true, InitPosition: []int{0, 0}, BeingPlayed: false}
+func NewSquare(isBeat bool, isBeingPlayed bool, initialPosition []int) *Square {
+	return &Square{IsBeat: isBeat, InitPosition: initialPosition, BeingPlayed: isBeingPlayed}
 }
 
 func (sqr *Square) UpdatePosition(pos []int) {

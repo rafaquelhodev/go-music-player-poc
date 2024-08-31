@@ -15,7 +15,7 @@ type Drawer struct {
 }
 
 func NewDrawer(soundOpts *options.Options) *Drawer {
-	return &Drawer{SoundOpts: soundOpts, beatWidth: 10, beatHeight: 5, beatSpacing: 4}
+	return &Drawer{SoundOpts: soundOpts, beatWidth: 12, beatHeight: 6, beatSpacing: 4}
 }
 
 func reset() {
@@ -25,12 +25,25 @@ func reset() {
 
 func (drw *Drawer) insertSquare(matrix *[][]string, sqr *Square) []int {
 	var lastJ int
-	for i := sqr.InitPosition[0]; i < drw.beatHeight+sqr.InitPosition[0]; i++ {
-		for j := sqr.InitPosition[1]; j < drw.beatWidth+sqr.InitPosition[1]; j++ {
-			if sqr.BeingPlayed || j == sqr.InitPosition[1] ||
-				j == drw.beatWidth+sqr.InitPosition[1]-1 ||
-				i == sqr.InitPosition[0] ||
-				i == drw.beatHeight+sqr.InitPosition[0]-1 {
+
+	initialI, initialJ := sqr.InitPosition[0], sqr.InitPosition[1]
+
+	height := drw.beatHeight
+	width := drw.beatWidth
+
+	if !sqr.IsBeat {
+		initialI += 2
+		initialJ += 2
+		height = height / 2
+		width = width / 2
+	}
+
+	for i := initialI; i < height+initialI; i++ {
+		for j := initialJ; j < width+initialJ; j++ {
+			if sqr.BeingPlayed || j == initialJ ||
+				j == width+initialJ-1 ||
+				i == initialI ||
+				i == height+initialI-1 {
 				(*matrix)[i][j] = "."
 			} else {
 				(*matrix)[i][j] = " "
@@ -55,32 +68,47 @@ func (drw *Drawer) addSpacing(matrix *[][]string, sqr *Square) []int {
 
 }
 
-func (drw *Drawer) initializeMatrix() [][]string {
-	totalSquares := *drw.SoundOpts.Beats * *drw.SoundOpts.Subdivisions
-
+func (drw *Drawer) initializeMatrix(totalSquares int) [][]string {
 	matrix := make([][]string, drw.beatHeight)
 	for i := range matrix {
 		matrix[i] = make([]string, totalSquares*(drw.beatWidth+drw.beatSpacing))
+		for j := range matrix[i] {
+			matrix[i][j] = " "
+		}
 	}
 	return matrix
 }
 
-func (drw *Drawer) Draw() {
+func (drw *Drawer) Draw(beepNumber int) {
 	var sb strings.Builder
 
-	matrix := drw.initializeMatrix()
+	totalSquares := *drw.SoundOpts.Beats + 1 + *drw.SoundOpts.Beats*(*drw.SoundOpts.Subdivisions-1)
 
-	totalSquares := *drw.SoundOpts.Beats * *drw.SoundOpts.Subdivisions
+	matrix := drw.initializeMatrix(totalSquares)
 
-	square := NewSquare()
+	nextSquarePosition := []int{0, 0}
+	isBeat := true
+	subCount := 0
+	for sqr := 1; sqr <= totalSquares; sqr++ {
+		square := NewSquare(isBeat, sqr == beepNumber, nextSquarePosition)
+		nextSquarePosition = drw.insertSquare(&matrix, square)
 
-	for sqr := 0; sqr < totalSquares; sqr++ {
-		nextPosition := drw.insertSquare(&matrix, square)
+		square.UpdatePosition(nextSquarePosition)
+		nextSquarePosition = drw.addSpacing(&matrix, square)
 
-		square.UpdatePosition(nextPosition)
-		nextPosition = drw.addSpacing(&matrix, square)
+		square.UpdatePosition(nextSquarePosition)
 
-		square.UpdatePosition(nextPosition)
+		if *drw.SoundOpts.Subdivisions > 1 {
+			if isBeat {
+				isBeat = false
+				subCount = 1
+			} else if subCount == *drw.SoundOpts.Subdivisions-1 {
+				isBeat = true
+				subCount = 0
+			} else {
+				subCount += 1
+			}
+		}
 	}
 
 	reset()
